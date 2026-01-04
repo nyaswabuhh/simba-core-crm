@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Quote {{ quote.quote_number }}</title>
+    <style>
+        @page {
+            size: letter;
+            margin: 0;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', 'Helvetica Neue', -apple-system, system-ui, sans-serif;
+            line-height: 1.7;
+            color: #0f172a;
+            background: white;
+        }
+        
+        .page {
+            padding: 60px;
+            position: relative;
+            min-height: 100vh;
+        }
+        
+        /* Fresh Header with Subtle Accent */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 50px;
+            padding-bottom: 35px;
+            position: relative;
+        }
+        
+        .header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 80px;
+            height: 3px;
+            background: linear-gradient(90deg, #3b82f6 0%, #60a5fa 100%);
+            border-radius: 2px;
+        }
+        
+        .company-section {
+            max-width: 55%;
+        }
+        
+        .logo-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .company-logo {
+            width: 65px;
+            height: 65px;
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px;
+        }
+        
+        .company-logo img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+        
+        .company-name {
+            font-size: 22px;
+            font-weight: 700;
+            color: #0f172a;
+            letter-spacing: -0.4px;
+        }
+        
+        .company-details {
+            font-size: 11px;
+            color: #64748b;
+            line-height: 1.9;
+            padding-left: 2px;
+        }
+        
+        .quote-section {
+            text-align: right;
+        }
+        
+        .quote-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #94a3b8;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .quote-number {
+            font-size: 36px;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 18px;
+            letter-spacing: -1.5px;
+        }
+        
+        .status-pill {
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 24px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border: 1.5px solid;
+        }
+        
+        .status-draft { 
+            background: #fef9c3; 
+            color: #854d0e; 
+            border-color: #fde047;
+        }
+        .status-sent { 
+            background: #dbeafe; 
+            color: #1e40af; 
+            border-color: #93c5fd;
+        }
+        .status-approved { 
+            background: #d1fae5; 
+            color: #065f46; 
+            border-color: #6ee7b7;
+        }
+        .status-rejected { 
+            background: #fee2e2; 
+            color: #991b1b; 
+            border-color: #fca5a5;
+        }
+        
+        /* Fresh Info Grid with Subtle Cards */
+        .info-section {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+            margin-bottom: 45px;
+        }
+        
+        .info-block {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            padding: 25px;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .info-block::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(180deg, #3b82f6 0%, #60a5fa 100%);
+        }
+        
+        .info-block h4 {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #3b82f6;
+            margin-bottom: 14px;
+            font-weight: 700;
+        }
+        
+        .info-block .primary {
+            font-size: 15px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 8px;
+        }
+        
+        .info-block .secondary {
+            font-size: 11px;
+            color: #64748b;
+            line-height: 1.8;
+        }
+        
+        .info-detail {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            font-size: 11px;
+            border-bottom: 1px dashed #e2e8f0;
+        }
+        
+        .info-detail:last-child {
+            border-bottom: none;
+        }
+        
+        .info-detail .label {
+            color: #94a3b8;
+            font-weight: 500;
+        }
+        
+        .info-detail .value {
+            color: #0f172a;
+            font-weight: 700;
+        }
+        
+        /* Fresh Table with Hover Effects */
+        .items-section {
+            margin-bottom: 45px;
+        }
+        
+        .section-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 16px;
+            background: linear-gradient(180deg, #3b82f6 0%, #60a5fa 100%);
+            margin-right: 10px;
+            border-radius: 2px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        thead {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border-bottom: 2px solid #e2e8f0;
+        }
+        
+        th {
+            padding: 16px 18px;
+            text-align: left;
+            font-weight: 700;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: #475569;
+        }
+        
+        th:last-child {
+            text-align: right;
+        }
+        
+        tbody tr {
+            border-bottom: 1px solid #f1f5f9;
+            transition: background 0.2s ease;
+        }
+        
+        tbody tr:last-child {
+            border-bottom: none;
+        }
+        
+        tbody tr:hover {
+            background: linear-gradient(135deg, #fefefe 0%, #f8fafc 100%);
+        }
+        
+        td {
+            padding: 20px 18px;
+            font-size: 12px;
+            color: #0f172a;
+        }
+        
+        td:last-child {
+            text-align: right;
+            font-weight: 700;
+            color: #3b82f6;
+        }
+        
+        .item-name {
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 5px;
+            font-size: 13px;
+        }
+        
+        .item-description {
+            color: #94a3b8;
+            font-size: 11px;
+            line-height: 1.6;
+        }
+        
+        /* Fresh Totals with Gradient Accent */
+        .totals-section {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 45px;
+        }
+        
+        .totals-wrapper {
+            width: 380px;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .totals-wrapper::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #3b82f6 0%, #60a5fa 100%);
+        }
+        
+        .totals-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            font-size: 13px;
+        }
+        
+        .totals-row .label {
+            color: #64748b;
+            font-weight: 600;
+        }
+        
+        .totals-row .value {
+            color: #0f172a;
+            font-weight: 700;
+        }
+        
+        .totals-divider {
+            border-top: 1px dashed #cbd5e1;
+            margin: 15px 0;
+        }
+        
+        .totals-row.total {
+            padding-top: 18px;
+            margin-top: 8px;
+            border-top: 2px solid #3b82f6;
+            font-size: 20px;
+        }
+        
+        .totals-row.total .label,
+        .totals-row.total .value {
+            color: #0f172a;
+            font-weight: 900;
+        }
+        
+        /* Fresh Notes Section */
+        .notes-section {
+            background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            border-left: 4px solid #f59e0b;
+            border: 1px solid #fde68a;
+        }
+        
+        .notes-section h5 {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #92400e;
+            margin-bottom: 12px;
+            font-weight: 700;
+        }
+        
+        .notes-section p {
+            font-size: 11px;
+            color: #78350f;
+            line-height: 1.8;
+        }
+        
+        /* Fresh Terms Section */
+        .terms-section {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            padding: 25px;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            margin-bottom: 40px;
+        }
+        
+        .terms-section h5 {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #475569;
+            margin-bottom: 12px;
+            font-weight: 700;
+        }
+        
+        .terms-section p {
+            font-size: 10px;
+            color: #64748b;
+            line-height: 1.9;
+        }
+        
+        /* Modern Footer */
+        .footer {
+            position: absolute;
+            bottom: 60px;
+            left: 60px;
+            right: 60px;
+            padding-top: 25px;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+            color: #94a3b8;
+        }
+        
+        .footer strong {
+            color: #3b82f6;
+            font-weight: 700;
+        }
+        
+        .footer-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+            border-radius: 12px;
+            font-size: 9px;
+            font-weight: 600;
+            color: #1e40af;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <!-- Header -->
+        <div class="header">
+            <div class="company-section">
+                <div class="logo-wrapper">
+                    {% if company.logo_url %}
+                    <div class="company-logo">
+                        <img src="{{ company.logo_url }}" alt="{{ company.name }}">
+                    </div>
+                    {% endif %}
+                    <div class="company-name">{{ company.name }}</div>
+                </div>
+                <div class="company-details">
+                    {{ company.address }}<br>
+                    {{ company.city }}<br>
+                    {{ company.phone }}<br>
+                    {{ company.email }}<br>
+                    {{ company.website }}
+                </div>
+            </div>
+            
+            <div class="quote-section">
+                <div class="quote-label">Quote</div>
+                <div class="quote-number">{{ quote.quote_number }}</div>
+                <span class="status-pill status-{{ quote.status.value.lower() }}">
+                    {{ quote.status.value }}
+                </span>
+            </div>
+        </div>
+
+        <!-- Info Section -->
+        <div class="info-section">
+            <div class="info-block">
+                <h4>Bill To</h4>
+                <div class="primary">{{ quote.account.name }}</div>
+                <div class="secondary">
+                    {% if quote.contact %}
+                    Att: {{ quote.contact.first_name }} {{ quote.contact.last_name }}<br>
+                    {{ quote.contact.phone }}<br>
+                    {{ quote.contact.email }}<br>
+                    {% endif %}
+                    {% if quote.account.billing_address %}
+                    {{ quote.account.billing_address }}
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="info-block">
+                <h4>Quote Date</h4>
+                <div class="info-detail">
+                    <span class="label">Date Issued:</span>
+                    <span class="value">{{ quote.created_at|date }}</span>
+                </div>
+                {% if quote.valid_until %}
+                <div class="info-detail">
+                    <span class="label">Valid Until:</span>
+                    <span class="value">{{ quote.valid_until|date }}</span>
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="info-block">
+                <h4>Your Contact</h4>
+                <div class="primary">{{ quote.owner.full_name }}</div>
+                <div class="secondary">
+                    Sales Representative<br>
+                    {{ company.email }}<br>
+                    {{ company.phone }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Items Table -->
+        <div class="items-section">
+            <div class="section-title">Quote Items</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 40%;">Description</th>
+                        <th>Quantity</th>
+                        <th>Unit Price</th>
+                        <th>Discount</th>
+                        <th>Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in quote.items %}
+                    <tr>
+                        <td>
+                            <div class="item-name">{{ item.product.name }}</div>
+                            <div class="item-description">{{ item.description }}</div>
+                        </td>
+                        <td>{{ item.quantity }}</td>
+                        <td>{{ item.unit_price|currency }}</td>
+                        <td>{{ item.discount_percentage }}%</td>
+                        <td>{{ item.total|currency }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Totals -->
+        <div class="totals-section">
+            <div class="totals-wrapper">
+                <div class="totals-row">
+                    <span class="label">Subtotal</span>
+                    <span class="value">Ksh {{ quote.subtotal|currency }}</span>
+                </div>
+                {% if quote.discount_amount > 0 %}
+                <div class="totals-row">
+                    <span class="label">Discount</span>
+                    <span class="value">-{{ quote.discount_amount|currency }}</span>
+                </div>
+                {% endif %}
+                <div class="totals-row">
+                    <span class="label">Tax ({{ quote.tax_rate }}%)</span>
+                    <span class="value">{{ quote.tax_amount|currency }}</span>
+                </div>
+                <div class="totals-divider"></div>
+                <div class="totals-row total">
+                    <span class="label">Total</span>
+                    <span class="value">Ksh {{ quote.total_amount|currency }}</span>
+                </div>
+            </div>
+        </div>
+
+        {% if quote.notes %}
+        <div class="notes-section">
+            <h5>Important Notes</h5>
+            <p>{{ quote.notes }}</p>
+        </div>
+        {% endif %}
+
+        {% if quote.terms_conditions %}
+        <div class="terms-section">
+            <h5>Terms & Conditions</h5>
+            <p>{{ quote.terms_conditions }}</p>
+        </div>
+        {% endif %}
+
+        <!-- Footer -->
+        <div class="footer">
+            <div>
+                <strong>{{ company.name }}</strong> • {{ company.website }}
+                <span class="footer-badge">Powered by SimbaPOS</span>
+            </div>
+            <div>
+                Generated {{ generated_date|datetime }}
+ 
+            </div>
+        </div>
+    </div>
+</body>
+</html>

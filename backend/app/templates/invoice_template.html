@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Invoice {{ invoice.invoice_number }}</title>
+    <style>
+        @page {
+            size: letter;
+            margin: 2cm;
+        }
+        
+        body {
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            line-height: 1.1;
+            color: #333;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #dc2626;
+        }
+        
+        .company-info {
+            flex: 1;
+        }
+        
+        .company-name {
+            font-size: 24px;
+            font-weight: bold;
+            color: #dc2626;
+            margin-bottom: 10px;
+        }
+        
+        .document-info {
+            text-align: right;
+        }
+        
+        .document-title {
+            font-size: 32px;
+            font-weight: bold;
+            color: #991b1b;
+            margin-bottom: 10px;
+        }
+        
+        .invoice-number {
+            font-size: 18px;
+            color: #666;
+        }
+        
+        .section {
+            margin-bottom: 30px;
+        }
+        
+        .section-title {
+            font-size: 14px;
+            font-weight: bold;
+            color: #dc2626;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+        
+        .customer-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        th {
+            background-color: #dc2626;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: bold;
+        }
+        
+        td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        tr:nth-child(even) {
+            background-color: #f9fafb;
+        }
+        
+        .text-right {
+            text-align: right;
+        }
+        
+        .totals {
+            margin-top: 30px;
+            float: right;
+            width: 300px;
+        }
+        
+        .totals table {
+            margin-top: 0;
+        }
+        
+        .totals td {
+            border: none;
+            padding: 8px 12px;
+        }
+        
+        .totals .total-row {
+            font-size: 18px;
+            font-weight: bold;
+            background-color: #dc2626;
+            color: white;
+        }
+        
+        .totals .amount-due-row {
+            font-size: 20px;
+            font-weight: bold;
+            background-color: #991b1b;
+            color: white;
+        }
+        
+        .payment-info {
+            background-color: #fef2f2;
+            border-left: 4px solid #dc2626;
+            padding: 20px;
+            margin-top: 30px;
+        }
+        
+        .footer {
+            margin-top: 60px;
+            padding-top: 20px;
+            border-top: 2px solid #e5e7eb;
+            font-size: 12px;
+            color: #6b7280;
+        }
+        
+        .footer strong {
+            color: #dc2626;
+            font-weight: 700;
+        }
+        
+        .footer-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            background: #fee2e2;
+            border-radius: 12px;
+            font-size: 9px;
+            font-weight: 600;
+            color: #991b1b;
+            margin-left: 10px;
+        }
+        
+        .terms {
+            margin-top: 40px;
+            padding: 20px;
+            background-color: #f9fafb;
+            border-left: 4px solid #dc2626;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        
+        .status-unpaid { background-color: #fee2e2; color: #991b1b; }
+        .status-partial { background-color: #fef3c7; color: #92400e; }
+        .status-paid { background-color: #d1fae5; color: #065f46; }
+        .status-overdue { background-color: #fee2e2; color: #7f1d1d; }
+        
+        .thank-you-box {
+            text-align: center;
+            margin: 40px 0 30px 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            border-radius: 8px;
+            border: 2px solid #dc2626;
+        }
+        
+        .thank-you-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #dc2626;
+            letter-spacing: 1px;
+        }
+        
+        .thank-you-subtitle {
+            font-size: 11px;
+            color: #991b1b;
+            margin-top: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="company-info">
+            <div class="company-name">{{ company.name }}</div>
+            <div>{{ company.trade }}</div>
+            <div>{{ company.address }}</div>
+            <div>{{ company.city }}</div>
+            <div>Phone: {{ company.phone }}</div>
+            <div>Email: {{ company.email }}</div>
+            <div>Tax ID: {{ company.tax_id }}</div>
+        </div>
+        <div class="document-info">
+            <div class="document-title">INVOICE</div>
+            <div class="invoice-number">{{ invoice.invoice_number }}</div>
+            <div style="margin-top: 10px;">
+                <span class="status-badge status-{{ invoice.status.value.lower() }}">
+                    {{ invoice.status.value }}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <div class="customer-info">
+        <div class="section">
+            <div class="section-title">Bill To</div>
+            <strong>{{ invoice.account.name }}</strong><br>
+            {% if invoice.contact %}
+            Att: {{ invoice.contact.full_name }}<br>
+            {{ invoice.contact.phone}}<br>
+            {{ invoice.contact.email }}<br>
+            {% endif %}
+            {% if invoice.account.billing_address %}
+            {{ invoice.account.billing_address }}
+            {% endif %}
+        </div>
+        
+        <div class="section">
+            <div class="section-title">Invoice Details</div>
+            <table style="border: none;">
+                <tr>
+                    <td style="border: none;"><strong>Issue Date:</strong></td>
+                    <td style="border: none;">{{ invoice.issue_date|date }}</td>
+                </tr>
+                <tr>
+                    <td style="border: none;"><strong>Due Date:</strong></td>
+                    <td style="border: none;">{{ invoice.due_date|date }}</td>
+                </tr>
+                {% if invoice.paid_date %}
+                <tr>
+                    <td style="border: none;"><strong>Paid Date:</strong></td>
+                    <td style="border: none;">{{ invoice.paid_date|date }}</td>
+                </tr>
+                {% endif %}
+                {% if invoice.quote_id %}
+                <tr>
+                    <td style="border: none;"><strong>Quote Ref:</strong></td>
+                    <td style="border: none;">{{ invoice.quote.quote_number }}</td>
+                </tr>
+                {% endif %}
+            </table>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Items</div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Description</th>
+                    <th class="text-right">Quantity</th>
+                    <th class="text-right">Unit Price</th>
+                    <th class="text-right">Discount</th>
+                    <th class="text-right">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in invoice.items %}
+                <tr>
+                    <td>
+                        <strong>{{ item.product.name }}</strong><br>
+                        <small style="color: #6b7280;">{{ item.description }}</small>
+                    </td>
+                    <td class="text-right">{{ item.quantity }}</td>
+                    <td class="text-right">{{ item.unit_price|currency }}</td>
+                    <td class="text-right">{{ item.discount_percentage }}%</td>
+                    <td class="text-right">{{ item.total|currency }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="totals">
+        <table>
+            <tr>
+                <td><strong>Subtotal:</strong></td>
+                <td class="text-right">Ksh {{ invoice.subtotal|currency }}</td>
+            </tr>
+            {% if invoice.discount_amount > 0 %}
+            <tr>
+                <td><strong>Discount:</strong></td>
+                <td class="text-right">-{{ invoice.discount_amount|currency }}</td>
+            </tr>
+            {% endif %}
+            <tr>
+                <td><strong>Tax ({{ invoice.tax_rate }}%):</strong></td>
+                <td class="text-right">{{ invoice.tax_amount|currency }}</td>
+            </tr>
+            <tr class="total-row">
+                <td><strong>TOTAL:</strong></td>
+                <td class="text-right"><strong>Ksh {{ invoice.total_amount|currency }}</strong></td>
+            </tr>
+            {% if invoice.amount_paid > 0 %}
+            <tr>
+                <td><strong>Amount Paid:</strong></td>
+                <td class="text-right">Ksh {{ invoice.amount_paid|currency }}</td>
+            </tr>
+            {% endif %}
+            <tr class="amount-due-row">
+                <td><strong>AMOUNT DUE:</strong></td>
+                <td class="text-right"><strong>Ksh {{ invoice.amount_due|currency }}</strong></td>
+            </tr>
+        </table>
+    </div>
+
+    <div style="clear: both;"></div>
+
+    {% if invoice.payments %}
+    <div class="payment-info">
+        <div class="section-title">Payment History</div>
+        <table style="font-size: 12px;">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Method</th>
+                    <th>Reference</th>
+                    <th class="text-right">Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for payment in invoice.payments %}
+                <tr>
+                    <td>{{ payment.payment_date|date }}</td>
+                    <td>{{ payment.payment_method.value }}</td>
+                    <td>{{ payment.reference_number or payment.payment_number }}</td>
+                    <td class="text-right">{{ payment.amount|currency }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    <div class="terms">
+        <div class="section-title">Payment Details</div>
+        <p>MPESA PAYBILL: 542542</p>
+        <p>A/C NO.: 00103761776350</p>
+    </div>
+
+    {% if invoice.notes %}
+    <div class="section">
+        <div class="section-title">Notes</div>
+        {{ invoice.notes }}
+    </div>
+    {% endif %}
+
+    <!-- Thank You Message -->
+    <div class="thank-you-box">
+        <div class="thank-you-title">THANK YOU FOR YOUR BUSINESS!</div>
+        <div class="thank-you-subtitle">We appreciate your trust in {{ company.name }}</div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <div>
+            <strong>{{ company.name }}</strong> • {{ company.website }}
+            <span class="footer-badge">Powered by SimbaPOS</span>
+        </div>
+        <div>
+            Generated {{ generated_date|datetime }}
+        </div>
+    </div>
+</body>
+</html>
