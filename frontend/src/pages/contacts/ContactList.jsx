@@ -14,7 +14,9 @@ import {
   Eye,
   Edit,
   Star,
-  StarOff
+  StarOff,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import ContactCreateModal from '../../components/modals/ContactCreateModal';
 import ContactEditModal from '../../components/modals/ContactEditModal';
@@ -30,11 +32,20 @@ function ContactsList() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedContact, setSelectedContact] = useState(null);
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
 
   useEffect(() => {
     loadContacts();
     loadAccounts();
   }, [accountFilter]);
+
+  useEffect(() => {
+    // Reset to page 1 when filters change
+    setCurrentPage(1);
+  }, [searchTerm, accountFilter, primaryFilter]);
 
   const loadContacts = async () => {
     try {
@@ -62,7 +73,12 @@ function ContactsList() {
   const loadAccounts = async () => {
     try {
       const response = await apiClient.get('/accounts');
-      setAccounts(response.data);
+      // Create account lookup map for easy access
+      const accountMap = {};
+      response.data.forEach(account => {
+        accountMap[account.id] = account;
+      });
+      setAccounts(accountMap);
     } catch (error) {
       console.error('Error loading accounts:', error);
     }
@@ -116,6 +132,58 @@ function ContactsList() {
     
     return matchesSearch && matchesPrimary;
   });
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredContacts.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedContacts = filteredContacts.slice(startIndex, endIndex);
+
+  const goToPage = (page) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const goToNextPage = () => {
+    if (currentPage < totalPages) {
+      goToPage(currentPage + 1);
+    }
+  };
+
+  const goToPreviousPage = () => {
+    if (currentPage > 1) {
+      goToPage(currentPage - 1);
+    }
+  };
+
+  const getPageNumbers = () => {
+    const pages = [];
+    const maxVisiblePages = 5;
+    
+    if (totalPages <= maxVisiblePages) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      if (currentPage <= 3) {
+        for (let i = 1; i <= 4; i++) pages.push(i);
+        pages.push('...');
+        pages.push(totalPages);
+      } else if (currentPage >= totalPages - 2) {
+        pages.push(1);
+        pages.push('...');
+        for (let i = totalPages - 3; i <= totalPages; i++) pages.push(i);
+      } else {
+        pages.push(1);
+        pages.push('...');
+        for (let i = currentPage - 1; i <= currentPage + 1; i++) pages.push(i);
+        pages.push('...');
+        pages.push(totalPages);
+      }
+    }
+    
+    return pages;
+  };
 
   const stats = {
     total: contacts.length,
@@ -224,7 +292,7 @@ function ContactsList() {
               className="input pl-10"
             >
               <option value="">All Accounts</option>
-              {accounts.map(account => (
+              {Object.values(accounts).map(account => (
                 <option key={account.id} value={account.id}>
                   {account.name}
                 </option>
@@ -281,8 +349,8 @@ function ContactsList() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredContacts.length > 0 ? (
-                filteredContacts.map((contact) => (
+              {paginatedContacts.length > 0 ? (
+                paginatedContacts.map((contact) => (
                   <tr 
                     key={contact.id}
                     onClick={() => navigate(`/contacts/${contact.id}`)}
@@ -309,14 +377,18 @@ function ContactsList() {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <Link
-                        to={`/accounts/${contact.account_id}`}
-                        onClick={(e) => e.stopPropagation()}
-                        className="text-sm text-blue-600 hover:text-blue-800 flex items-center"
-                      >
-                        <Building2 size={14} className="mr-1" />
-                        Account
-                      </Link>
+                      {accounts[contact.account_id] ? (
+                        <Link
+                          to={`/accounts/${contact.account_id}`}
+                          onClick={(e) => e.stopPropagation()}
+                          className="text-sm text-blue-600 hover:text-blue-800 flex items-center"
+                        >
+                          <Building2 size={14} className="mr-1" />
+                          {accounts[contact.account_id].name}
+                        </Link>
+                      ) : (
+                        <span className="text-sm text-gray-400">-</span>
+                      )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center text-sm text-gray-900">
@@ -417,12 +489,71 @@ function ContactsList() {
         </div>
 
         {/* Pagination */}
-        {filteredContacts.length > 0 && (
+        {totalPages > 1 && (
           <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+              {/* Results info */}
               <div className="text-sm text-gray-700">
-                Showing <span className="font-medium">{filteredContacts.length}</span> of{' '}
-                <span className="font-medium">{contacts.length}</span> contacts
+                Showing <span className="font-medium">{startIndex + 1}</span> to{' '}
+                <span className="font-medium">{Math.min(endIndex, filteredContacts.length)}</span> of{' '}
+                <span className="font-medium">{filteredContacts.length}</span> contacts
+                {contacts.length !== filteredContacts.length && (
+                  <span className="text-gray-500"> (filtered from {contacts.length} total)</span>
+                )}
+              </div>
+
+              {/* Pagination controls */}
+              <div className="flex items-center gap-2">
+                {/* Previous button */}
+                <button
+                  onClick={goToPreviousPage}
+                  disabled={currentPage === 1}
+                  className={`px-3 py-2 rounded-md text-sm font-medium transition ${
+                    currentPage === 1
+                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                      : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
+                  }`}
+                >
+                  <ChevronLeft size={16} />
+                </button>
+
+                {/* Desktop: Page numbers */}
+                <div className="hidden sm:flex items-center gap-1">
+                  {getPageNumbers().map((page, index) => (
+                    <button
+                      key={index}
+                      onClick={() => typeof page === 'number' && goToPage(page)}
+                      disabled={page === '...'}
+                      className={`px-3 py-2 rounded-md text-sm font-medium transition ${
+                        page === currentPage
+                          ? 'bg-blue-600 text-white'
+                          : page === '...'
+                          ? 'bg-white text-gray-400 cursor-default'
+                          : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Mobile: Page indicator */}
+                <div className="sm:hidden text-sm text-gray-700 px-3 py-2">
+                  Page {currentPage} of {totalPages}
+                </div>
+
+                {/* Next button */}
+                <button
+                  onClick={goToNextPage}
+                  disabled={currentPage === totalPages}
+                  className={`px-3 py-2 rounded-md text-sm font-medium transition ${
+                    currentPage === totalPages
+                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                      : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
+                  }`}
+                >
+                  <ChevronRight size={16} />
+                </button>
               </div>
             </div>
           </div>

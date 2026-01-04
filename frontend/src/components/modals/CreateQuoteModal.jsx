@@ -320,7 +320,7 @@ function CreateQuoteModal({ onClose, onSuccess, preselectedAccountId = null }) {
                               className="w-16 px-2 py-1 text-sm border border-gray-300 rounded"
                             />
                           </td>
-                          <td className="px-3 py-2 text-right text-sm font-semibold">${itemTotal.toFixed(2)}</td>
+                          <td className="px-3 py-2 text-right text-sm font-semibold">Ksh {itemTotal.toFixed(2)}</td>
                           <td className="px-3 py-2">
                             {items.length > 1 && (
                               <button type="button" onClick={() => removeItem(index)} className="text-red-600 hover:text-red-800">
@@ -372,21 +372,21 @@ function CreateQuoteModal({ onClose, onSuccess, preselectedAccountId = null }) {
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Subtotal:</span>
-                    <span className="font-semibold">${totals.subtotal.toFixed(2)}</span>
+                    <span className="font-semibold">Ksh {totals.subtotal.toFixed(2)}</span>
                   </div>
                   {totals.discountAmount > 0 && (
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">Discount:</span>
-                      <span className="text-red-600">-${totals.discountAmount.toFixed(2)}</span>
+                      <span className="text-red-600">-Ksh {totals.discountAmount.toFixed(2)}</span>
                     </div>
                   )}
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Tax ({taxRate}%):</span>
-                    <span className="font-semibold">${totals.taxAmount.toFixed(2)}</span>
+                    <span className="font-semibold">Ksh {totals.taxAmount.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-lg font-bold border-t pt-2">
                     <span>Total:</span>
-                    <span className="text-green-600">${totals.total.toFixed(2)}</span>
+                    <span className="text-green-600">Ksh {totals.total.toFixed(2)}</span>
                   </div>
                 </div>
               </div>

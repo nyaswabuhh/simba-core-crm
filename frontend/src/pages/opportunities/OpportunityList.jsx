@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import apiClient from '../../api/client';
 import toast from 'react-hot-toast';
-import { Plus, Search, Target, DollarSign, TrendingUp } from 'lucide-react';
+import { Plus, Search, Target, DollarSign, TrendingUp, ChevronLeft, ChevronRight } from 'lucide-react';
 import CreateOpportunityModal from '../../components/modals/CreateOpportunityModal';
 
 function OpportunityList() {
@@ -12,10 +12,19 @@ function OpportunityList() {
   const [searchTerm, setSearchTerm] = useState('');
   const [stageFilter, setStageFilter] = useState('');
   const [accounts, setAccounts] = useState({});
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
 
   useEffect(() => {
     loadData();
   }, [stageFilter]);
+
+  useEffect(() => {
+    // Reset to page 1 when filters change
+    setCurrentPage(1);
+  }, [searchTerm, stageFilter]);
 
   const loadData = async () => {
     try {
@@ -40,7 +49,13 @@ function OpportunityList() {
       });
       
       setAccounts(accountMap);
-      setOpportunities(oppsResponse.data);
+      
+      // Sort opportunities by created_at descending (most recent first)
+      const sortedOpportunities = oppsResponse.data.sort((a, b) => 
+        new Date(b.created_at) - new Date(a.created_at)
+      );
+      
+      setOpportunities(sortedOpportunities);
     } catch (error) {
       toast.error('Failed to load opportunities');
       console.error('Error loading opportunities:', error);
@@ -70,6 +85,58 @@ function OpportunityList() {
       opp.description?.toLowerCase().includes(searchLower)
     );
   });
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredOpportunities.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedOpportunities = filteredOpportunities.slice(startIndex, endIndex);
+
+  const goToPage = (page) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const goToNextPage = () => {
+    if (currentPage < totalPages) {
+      goToPage(currentPage + 1);
+    }
+  };
+
+  const goToPreviousPage = () => {
+    if (currentPage > 1) {
+      goToPage(currentPage - 1);
+    }
+  };
+
+  const getPageNumbers = () => {
+    const pages = [];
+    const maxVisiblePages = 5;
+    
+    if (totalPages <= maxVisiblePages) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      if (currentPage <= 3) {
+        for (let i = 1; i <= 4; i++) pages.push(i);
+        pages.push('...');
+        pages.push(totalPages);
+      } else if (currentPage >= totalPages - 2) {
+        pages.push(1);
+        pages.push('...');
+        for (let i = totalPages - 3; i <= totalPages; i++) pages.push(i);
+      } else {
+        pages.push(1);
+        pages.push('...');
+        for (let i = currentPage - 1; i <= currentPage + 1; i++) pages.push(i);
+        pages.push('...');
+        pages.push(totalPages);
+      }
+    }
+    
+    return pages;
+  };
 
   const getTotalValue = () => {
     return filteredOpportunities.reduce((sum, opp) => sum + parseFloat(opp.amount || 0), 0);
@@ -226,12 +293,15 @@ function OpportunityList() {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Close Date
                 </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Created
+                </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredOpportunities.length === 0 ? (
+              {paginatedOpportunities.length === 0 ? (
                 <tr>
-                  <td colSpan="6" className="px-6 py-12 text-center">
+                  <td colSpan="7" className="px-6 py-12 text-center">
                     <div className="text-gray-500">
                       <Target className="mx-auto h-12 w-12 text-gray-400 mb-4" />
                       <p className="text-lg font-medium">No opportunities found</p>
@@ -242,7 +312,7 @@ function OpportunityList() {
                   </td>
                 </tr>
               ) : (
-                filteredOpportunities.map((opp) => (
+                paginatedOpportunities.map((opp) => (
                   <tr key={opp.id} className="hover:bg-gray-50 transition">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <Link
@@ -278,12 +348,86 @@ function OpportunityList() {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                       {formatDate(opp.expected_close_date)}
                     </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                      {formatDate(opp.created_at)}
+                    </td>
                   </tr>
                 ))
               )}
             </tbody>
           </table>
         </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="bg-white px-4 py-3 border-t border-gray-200 sm:px-6">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+              {/* Results info */}
+              <div className="text-sm text-gray-700">
+                Showing <span className="font-medium">{startIndex + 1}</span> to{' '}
+                <span className="font-medium">{Math.min(endIndex, filteredOpportunities.length)}</span> of{' '}
+                <span className="font-medium">{filteredOpportunities.length}</span> opportunities
+                {opportunities.length !== filteredOpportunities.length && (
+                  <span className="text-gray-500"> (filtered from {opportunities.length} total)</span>
+                )}
+              </div>
+
+              {/* Pagination controls */}
+              <div className="flex items-center gap-2">
+                {/* Previous button */}
+                <button
+                  onClick={goToPreviousPage}
+                  disabled={currentPage === 1}
+                  className={`px-3 py-2 rounded-md text-sm font-medium transition ${
+                    currentPage === 1
+                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                      : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
+                  }`}
+                >
+                  <ChevronLeft size={16} />
+                </button>
+
+                {/* Desktop: Page numbers */}
+                <div className="hidden sm:flex items-center gap-1">
+                  {getPageNumbers().map((page, index) => (
+                    <button
+                      key={index}
+                      onClick={() => typeof page === 'number' && goToPage(page)}
+                      disabled={page === '...'}
+                      className={`px-3 py-2 rounded-md text-sm font-medium transition ${
+                        page === currentPage
+                          ? 'bg-blue-600 text-white'
+                          : page === '...'
+                          ? 'bg-white text-gray-400 cursor-default'
+                          : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Mobile: Page indicator */}
+                <div className="sm:hidden text-sm text-gray-700 px-3 py-2">
+                  Page {currentPage} of {totalPages}
+                </div>
+
+                {/* Next button */}
+                <button
+                  onClick={goToNextPage}
+                  disabled={currentPage === totalPages}
+                  className={`px-3 py-2 rounded-md text-sm font-medium transition ${
+                    currentPage === totalPages
+                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                      : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
+                  }`}
+                >
+                  <ChevronRight size={16} />
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Create Modal */}

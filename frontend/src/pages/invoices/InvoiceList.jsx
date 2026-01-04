@@ -129,10 +129,15 @@ function InvoiceList() {
     }
   };
 
-  const formatCurrency = (value) => {
-    if (value === null || value === undefined) return '$0.00';
-    return `$${parseFloat(value).toFixed(2)}`;
-  };
+ const formatCurrency = (value) => {
+  if (value === null || value === undefined) return 'Ksh 0.00';
+
+  return `Ksh ${Number(value).toLocaleString('en-KE', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
+};
+
 
   const isOverdue = (invoice) => {
     if (invoice.status === 'Paid' || invoice.status === 'Cancelled') {

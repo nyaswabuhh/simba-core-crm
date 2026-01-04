@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import apiClient from '../../api/client';
 import toast from 'react-hot-toast';
-import { Plus, Search, Package, DollarSign, Grid } from 'lucide-react';
+import { Plus, Search, Package, DollarSign, Grid, ChevronLeft, ChevronRight } from 'lucide-react';
 import CreateProductModal from '../../components/modals/CreateProductModal';
 
 function ProductList() {
@@ -11,10 +11,19 @@ function ProductList() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
 
   useEffect(() => {
     loadProducts();
   }, [categoryFilter]);
+
+  useEffect(() => {
+    // Reset to page 1 when filters change
+    setCurrentPage(1);
+  }, [searchTerm, categoryFilter]);
 
   const loadProducts = async () => {
     try {
@@ -26,7 +35,13 @@ function ProductList() {
       
       const url = `/products${params.toString() ? `?${params.toString()}` : ''}`;
       const response = await apiClient.get(url);
-      setProducts(response.data);
+      
+      // Sort products by created_at descending (most recent first)
+      const sortedProducts = response.data.sort((a, b) => 
+        new Date(b.created_at) - new Date(a.created_at)
+      );
+      
+      setProducts(sortedProducts);
     } catch (error) {
       toast.error('Failed to load products');
       console.error('Error loading products:', error);
@@ -44,6 +59,58 @@ function ProductList() {
       product.product_type?.toLowerCase().includes(searchLower)
     );
   });
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedProducts = filteredProducts.slice(startIndex, endIndex);
+
+  const goToPage = (page) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const goToNextPage = () => {
+    if (currentPage < totalPages) {
+      goToPage(currentPage + 1);
+    }
+  };
+
+  const goToPreviousPage = () => {
+    if (currentPage > 1) {
+      goToPage(currentPage - 1);
+    }
+  };
+
+  const getPageNumbers = () => {
+    const pages = [];
+    const maxVisiblePages = 5;
+    
+    if (totalPages <= maxVisiblePages) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      if (currentPage <= 3) {
+        for (let i = 1; i <= 4; i++) pages.push(i);
+        pages.push('...');
+        pages.push(totalPages);
+      } else if (currentPage >= totalPages - 2) {
+        pages.push(1);
+        pages.push('...');
+        for (let i = totalPages - 3; i <= totalPages; i++) pages.push(i);
+      } else {
+        pages.push(1);
+        pages.push('...');
+        for (let i = currentPage - 1; i <= currentPage + 1; i++) pages.push(i);
+        pages.push('...');
+        pages.push(totalPages);
+      }
+    }
+    
+    return pages;
+  };
 
   const getStatusBadgeClass = (isActive) => {
     return isActive ? 'badge badge-success' : 'badge badge-gray';
@@ -171,7 +238,7 @@ function ProductList() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredProducts.length === 0 ? (
+              {paginatedProducts.length === 0 ? (
                 <tr>
                   <td colSpan="6" className="px-6 py-12 text-center">
                     <div className="text-gray-500">
@@ -184,7 +251,7 @@ function ProductList() {
                   </td>
                 </tr>
               ) : (
-                filteredProducts.map((product) => (
+                paginatedProducts.map((product) => (
                   <tr key={product.id} className="hover:bg-gray-50 transition">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <Link
@@ -225,6 +292,77 @@ function ProductList() {
             </tbody>
           </table>
         </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="bg-white px-4 py-3 border-t border-gray-200 sm:px-6">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+              {/* Results info */}
+              <div className="text-sm text-gray-700">
+                Showing <span className="font-medium">{startIndex + 1}</span> to{' '}
+                <span className="font-medium">{Math.min(endIndex, filteredProducts.length)}</span> of{' '}
+                <span className="font-medium">{filteredProducts.length}</span> products
+                {products.length !== filteredProducts.length && (
+                  <span className="text-gray-500"> (filtered from {products.length} total)</span>
+                )}
+              </div>
+
+              {/* Pagination controls */}
+              <div className="flex items-center gap-2">
+                {/* Previous button */}
+                <button
+                  onClick={goToPreviousPage}
+                  disabled={currentPage === 1}
+                  className={`px-3 py-2 rounded-md text-sm font-medium transition ${
+                    currentPage === 1
+                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                      : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
+                  }`}
+                >
+                  <ChevronLeft size={16} />
+                </button>
+
+                {/* Desktop: Page numbers */}
+                <div className="hidden sm:flex items-center gap-1">
+                  {getPageNumbers().map((page, index) => (
+                    <button
+                      key={index}
+                      onClick={() => typeof page === 'number' && goToPage(page)}
+                      disabled={page === '...'}
+                      className={`px-3 py-2 rounded-md text-sm font-medium transition ${
+                        page === currentPage
+                          ? 'bg-blue-600 text-white'
+                          : page === '...'
+                          ? 'bg-white text-gray-400 cursor-default'
+                          : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Mobile: Page indicator */}
+                <div className="sm:hidden text-sm text-gray-700 px-3 py-2">
+                  Page {currentPage} of {totalPages}
+                </div>
+
+                {/* Next button */}
+                <button
+                  onClick={goToNextPage}
+                  disabled={currentPage === totalPages}
+                  className={`px-3 py-2 rounded-md text-sm font-medium transition ${
+                    currentPage === totalPages
+                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                      : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
+                  }`}
+                >
+                  <ChevronRight size={16} />
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Create Modal */}
