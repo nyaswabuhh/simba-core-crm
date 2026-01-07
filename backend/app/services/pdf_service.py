@@ -2,11 +2,13 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 from weasyprint import HTML, CSS
 from datetime import datetime
 from pathlib import Path
+import base64
 import os
 
 
 # Get template directory
 TEMPLATE_DIR = Path(__file__).parent.parent / "templates"
+STATIC_DIR = Path(__file__).parent.parent / "static"
 
 # Initialize Jinja2 environment
 env = Environment(
@@ -26,16 +28,61 @@ def format_datetime(value):
         return value.strftime("%B %d, %Y at %I:%M %p")
     return value
 
+
 def format_date(value):
     """Format datetime as date only."""
     if isinstance(value, datetime):
         return value.strftime("%B %d, %Y")
     return value
 
+
 # Add custom filters
 env.filters['currency'] = format_currency
 env.filters['date'] = format_date
 env.filters['datetime'] = format_datetime
+
+
+def get_logo_base64() -> str:
+    """
+    Get the company logo as a base64 data URI.
+    This ensures the logo is embedded directly in the HTML for reliable PDF rendering.
+    
+    Returns:
+        Base64 data URI string or empty string if logo not found
+    """
+    logo_path = STATIC_DIR / "images" / "simbalogo.png"
+    
+    if not logo_path.exists():
+        print(f"Warning: Logo not found at {logo_path}")
+        return ""
+    
+    try:
+        with open(logo_path, "rb") as f:
+            logo_data = f.read()
+        
+        base64_data = base64.b64encode(logo_data).decode("utf-8")
+        return f"data:image/png;base64,{base64_data}"
+    except Exception as e:
+        print(f"Error loading logo: {e}")
+        return ""
+
+
+def get_company_info() -> dict:
+    """
+    Get standard company information.
+    Centralizes company details for consistency across all documents.
+    """
+    return {
+        'name': 'SimbaPOS',
+        'trade': 'T/A JESATON SYSTEMS LTD',
+        'address': 'Contrust House, 6th Floor',
+        'city': 'Moi Avenue, Nairobi-Kenya',
+        'phone': '+254 700 001779',
+        'email': 'sales@simbapos.co.ke',
+        'website': 'www.simbapos.co.ke',
+        'tax_id': 'N/A',
+        'logo_url': get_logo_base64()
+    }
 
 
 def generate_quote_pdf(quote) -> bytes:
@@ -53,15 +100,7 @@ def generate_quote_pdf(quote) -> bytes:
     # Prepare context
     context = {
         'quote': quote,
-        'company': {
-            'name': 'SimbaPOS',
-            'trade':'T/A JESATON SYSTEMS LTD',
-            'address': 'Contrust House, 6th Floor',
-            'city': 'Moi Avenue, Nairobi-Kenya',
-            'phone': '+254 700 001779',
-            'email': 'sales@simbapos.co.ke',
-            'website': 'www.simbapos.co.ke'
-        },
+        'company': get_company_info(),
         'generated_date': datetime.now()
     }
     
@@ -71,7 +110,7 @@ def generate_quote_pdf(quote) -> bytes:
     # Generate PDF
     pdf = HTML(string=html_content).write_pdf()
     
-    return pdf # type: ignore
+    return pdf  # type: ignore
 
 
 def generate_invoice_pdf(invoice) -> bytes:
@@ -93,16 +132,7 @@ def generate_invoice_pdf(invoice) -> bytes:
     context = {
         'invoice': invoice,
         'total_paid': total_paid,
-        'company': {
-            'name': 'SimbaPOS',
-            'trade':'T/A JESATON SYSTEMS LTD',
-            'address': 'Contrust House, 6th Floor',
-            'city': 'Moi Avenue, Nairobi',
-            'phone': '+254 700 001779',
-            'email': 'sales@simbapos.co.ke',
-            'website': 'www.simbapos.co.ke',
-            'tax_id': 'N/A'
-        },
+        'company': get_company_info(),
         'generated_date': datetime.now()
     }
     
@@ -112,7 +142,7 @@ def generate_invoice_pdf(invoice) -> bytes:
     # Generate PDF
     pdf = HTML(string=html_content).write_pdf()
     
-    return pdf # type: ignore
+    return pdf  # type: ignore
 
 
 def generate_receipt_pdf(payment) -> bytes:
@@ -131,17 +161,9 @@ def generate_receipt_pdf(payment) -> bytes:
     context = {
         'payment': payment,
         'invoice': payment.invoice,
-        'company': {
-            'name': 'Your Company Name',
-            'address': '123 Business Street',
-            'city': 'Business City, ST 12345',
-            'phone': '(555) 123-4567',
-            'email': 'billing@yourcompany.com',
-            'website': 'www.yourcompany.com'
-        },
+        'company': get_company_info(),
         'generated_date': datetime.now()
     }
-  
     
     # Render HTML
     html_content = template.render(context)
@@ -149,4 +171,4 @@ def generate_receipt_pdf(payment) -> bytes:
     # Generate PDF
     pdf = HTML(string=html_content).write_pdf()
     
-    return pdf # type: ignore
+    return pdf  # type: ignore
