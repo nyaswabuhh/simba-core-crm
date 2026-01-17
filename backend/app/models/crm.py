@@ -31,6 +31,10 @@ class LeadStatus(str, enum.Enum):
 class LeadSource(str, enum.Enum):
     WEBSITE = "Website"
     REFERRAL = "Referral"
+    PHONE_CALL_715="Call 715"
+    PHONE_CALL_700="Call 700"
+    WHATSAPP_715="WhatsApp 715"
+    WHATSAPP_700="WhatsApp 700"
     SOCIAL_MEDIA = "Social Media"
     EMAIL_CAMPAIGN = "Email Campaign"
     COLD_CALL = "Cold Call"

@@ -9,7 +9,7 @@ function ConvertToInvoiceModal({ quote, onClose, onSuccess }) {
     issue_date: new Date().toISOString().split('T')[0],
     due_date: (() => {
       const date = new Date();
-      date.setDate(date.getDate() + 30); // Default 30 days from now
+      date.setDate(date.getDate()); // Default due today
       return date.toISOString().split('T')[0];
     })(),
     notes: quote.notes || '',

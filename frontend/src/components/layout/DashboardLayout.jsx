@@ -77,6 +77,8 @@ function DashboardLayout({ children }) {
     { name: 'Quotes', href: '/quotes', icon: FileText, roles: ['Admin', 'Sales', 'Finance'] },
     { name: 'Invoices', href: '/invoices', icon: Receipt, roles: ['Admin', 'Sales', 'Finance'] },
     { name: 'Payments', href: '/payments', icon: CreditCard, roles: ['Admin', 'Finance'] },
+    { name: 'Users', href: '/users', icon: Users, roles: ['Admin'] }
+
   ];
 
   const filteredNavigation = navigation.filter(item => 
@@ -115,7 +117,7 @@ function DashboardLayout({ children }) {
             </div>
             {!sidebarCollapsed && (
               <span className="text-lg font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                CRM Pro
+                SimbaCRM
               </span>
             )}
           </Link>

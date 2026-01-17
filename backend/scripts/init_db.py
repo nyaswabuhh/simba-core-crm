@@ -33,7 +33,7 @@ def init_db():
                 email="admin@crm.com",
                 hashed_password=get_password_hash("admin123"),
                 first_name="Admin",
-                last_name="User",
+                last_name="Admin",
                 role=UserRole.ADMIN,
                 is_active=True
             )

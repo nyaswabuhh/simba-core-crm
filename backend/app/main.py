@@ -69,7 +69,7 @@ app.include_router(api_router, prefix=settings.API_V1_PREFIX)
 @app.get("/")
 def root():
     return {
-        "message": "CRM System API",
+        "message": "SimbaCRM System API",
         "version": "1.0.0",
         "docs": f"{settings.API_V1_PREFIX}/docs",
         "status": "running"

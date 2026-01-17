@@ -36,7 +36,7 @@ function Login() {
           <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-600 rounded-full mb-4">
             <LogIn className="text-white" size={32} />
           </div>
-          <h2 className="text-3xl font-bold text-gray-900">CRM System</h2>
+          <h2 className="text-3xl font-bold text-gray-900">SimbaCRM</h2>
           <p className="mt-2 text-gray-600">Sign in to your account</p>
         </div>
 
@@ -108,14 +108,14 @@ function Login() {
           </form>
 
           {/* Demo Credentials */}
-          <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+          {/* <div className="mt-6 p-4 bg-gray-50 rounded-lg">
             <p className="text-xs font-semibold text-gray-700 mb-2">Demo Credentials:</p>
             <div className="space-y-1 text-xs text-gray-600">
               <p><strong>Admin:</strong> admin@crm.com / admin123</p>
               <p><strong>Sales:</strong> sales@crm.com / sales123</p>
               <p><strong>Finance:</strong> finance@crm.com / finance123</p>
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
     </div>

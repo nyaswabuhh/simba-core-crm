@@ -15,7 +15,6 @@ import Analytics from './pages/Analytics';
 import LeadList from './pages/leads/LeadList';
 import TestModal from './pages/leads/TestModal';
 import LeadDetails from './pages/leads/LeadDetails';
-
 import AccountList from './pages/accounts/AccountList';
 import AccountDetails from './pages/accounts/AccountDetails';
 import OpportunityList from './pages/opportunities/OpportunityList';
@@ -30,6 +29,10 @@ import PaymentsList from './pages/payments/PaymentsList';
 import PaymentDetails from './pages/payments/PaymentDetails';
 import ContactsList from './pages/contacts/ContactList';
 import ContactDetails from './pages/contacts/ContactDetail';
+import UserList from './pages/users/UserList';
+import UserDetails from './pages/users/UserDetails';
+
+
 function App() {
   const { checkAuth, isLoading } = useAuthStore();
 
@@ -94,6 +97,10 @@ function App() {
                 {/* Payments */}
                 <Route path='/payments' element={<PaymentsList />} />
                 <Route path="/payments/:id" element={<PaymentDetails />} />
+
+                {/* Users */}
+                <Route path='/users' element={<UserList />} />
+                <Route path='users/:id' element={<UserDetails />} />
                 
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
