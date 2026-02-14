@@ -55,8 +55,8 @@ function RecordPaymentModal({ invoice, onClose, onSuccess }) {
   };
 
   const formatCurrency = (value) => {
-    if (value === null || value === undefined) return '$0.00';
-    return `$${parseFloat(value).toFixed(2)}`;
+    if (value === null || value === undefined) return 'Ksh 0.00';
+    return `Ksh ${parseFloat(value).toFixed(2)}`;
   };
 
   const handleSubmit = async (e) => {
@@ -174,7 +174,7 @@ function RecordPaymentModal({ invoice, onClose, onSuccess }) {
             <div className="flex space-x-2">
               <div className="relative flex-1">
                 <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
-                  $
+                  
                 </span>
                 <input
                   type="number"

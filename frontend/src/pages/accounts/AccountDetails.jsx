@@ -41,7 +41,7 @@ function AccountDetails() {
       const accountRes = await apiClient.get(`/accounts/${id}`);
       setAccount(accountRes.data);
       
-      // Try to load contacts and opportunities (may fail if endpoints don't exist yet)
+      // Try to load contacts and opportunities 
       try {
         const contactsRes = await apiClient.get(`/contacts?account_id=${id}`);
         setContacts(contactsRes.data || []);

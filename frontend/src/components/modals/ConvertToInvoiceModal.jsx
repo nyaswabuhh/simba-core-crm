@@ -64,7 +64,7 @@ function ConvertToInvoiceModal({ quote, onClose, onSuccess }) {
 
   const formatCurrency = (value) => {
     if (value === null || value === undefined) return '$0.00';
-    return `$${parseFloat(value).toFixed(2)}`;
+    return `Ksh ${parseFloat(value).toFixed(2)}`;
   };
 
   return (

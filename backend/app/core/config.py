@@ -6,7 +6,7 @@ import secrets
 class Settings(BaseSettings):
     # API Settings
     API_V1_PREFIX: str = "/api/v1"
-    PROJECT_NAME: str = "CRM System"
+    PROJECT_NAME: str = "SimbaCRM System"
     DEBUG: bool = True
     
     # Database

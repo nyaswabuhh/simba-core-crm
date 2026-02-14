@@ -195,6 +195,21 @@ class InvoiceResponse(InvoiceBase):
         from_attributes = True
 
 
+# ==================== INVOICE SUMMARY (for Payment) ====================
+
+class InvoiceSummary(BaseModel):
+    """Minimal invoice info for payment responses"""
+    id: UUID
+    invoice_number: str
+    status: InvoiceStatus
+    total_amount: Decimal
+    amount_paid: Decimal
+    amount_due: Decimal
+
+    class Config:
+        from_attributes = True
+
+
 # ==================== PAYMENT SCHEMAS ====================
 
 class PaymentBase(BaseModel):
@@ -222,7 +237,8 @@ class PaymentResponse(PaymentBase):
     payment_number: str
     status: PaymentStatus
     processed_by: UUID
-    processor_user: UserSummary
+    processor_user: Optional[UserSummary] = None
+    invoice: Optional[InvoiceSummary] = None
     created_at: datetime
     updated_at: Optional[datetime] = None
 

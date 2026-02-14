@@ -16,19 +16,26 @@ import {
   XCircle,
   CreditCard,
   Receipt,
+  Trash2,
 } from "lucide-react";
+import useAuthStore from "../../store/authStore";
 import RecordPaymentModal from "../../components/modals/RecordPaymentModal";
+import DeleteInvoiceModal from "../../components/modals/DeleteInvoiceModal";
 
 function InvoiceDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user: currentUser } = useAuthStore();
   const [invoice, setInvoice] = useState(null);
   const [account, setAccount] = useState(null);
   const [contact, setContact] = useState(null);
   const [quote, setQuote] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
+
+  const isFinance = currentUser?.role === 'Finance' || currentUser?.role === 'Admin';
 
   useEffect(() => {
     if (id) {
@@ -127,6 +134,17 @@ function InvoiceDetails() {
     }
   };
 
+  const handleDeleteInvoice = async () => {
+    try {
+      await apiClient.delete(`/invoices/${id}`);
+      toast.success("Invoice deleted successfully");
+      navigate("/invoices");
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Failed to delete invoice");
+      console.error("Error deleting invoice:", error);
+    }
+  };
+
   const handlePaymentSuccess = () => {
     setShowPaymentModal(false);
     loadInvoice();
@@ -179,6 +197,7 @@ function InvoiceDetails() {
     invoice?.status !== "Paid" &&
     invoice?.status !== "Cancelled" &&
     invoice?.amount_due > 0;
+  const canDelete = isFinance && invoice?.status !== "Paid" && invoice?.amount_paid === 0;
 
   if (loading) {
     return (
@@ -229,6 +248,15 @@ function InvoiceDetails() {
           </div>
         </div>
         <div className="flex items-center space-x-3 flex-wrap">
+          {isFinance && (
+            <button
+              onClick={() => setShowDeleteModal(true)}
+              className="btn btn-danger flex items-center"
+            >
+              <Trash2 size={18} className="mr-2" />
+              Delete
+            </button>
+          )}
           <button
             onClick={handleDownloadPDF}
             disabled={actionLoading}
@@ -705,6 +733,15 @@ function InvoiceDetails() {
           invoice={invoice}
           onClose={() => setShowPaymentModal(false)}
           onSuccess={handlePaymentSuccess}
+        />
+      )}
+
+      {/* Delete Invoice Modal */}
+      {showDeleteModal && (
+        <DeleteInvoiceModal
+          invoice={invoice}
+          onClose={() => setShowDeleteModal(false)}
+          onConfirm={handleDeleteInvoice}
         />
       )}
     </div>

@@ -114,6 +114,7 @@ def list_payments(
         query = query.filter(Payment.invoice_id == invoice_id)
     
     payments = query.options(
+        joinedload(Payment.invoice),
         joinedload(Payment.processor_user)
     ).offset(skip).limit(limit).all()
     

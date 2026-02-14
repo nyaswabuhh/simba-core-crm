@@ -15,7 +15,8 @@ import {
   CheckCircle,
   XCircle,
   AlertCircle,
-  RefreshCw
+  RefreshCw,
+  ChevronRight
 } from 'lucide-react';
 
 function PaymentsList() {
@@ -51,6 +52,10 @@ function PaymentsList() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleRowClick = (paymentId) => {
+    navigate(`/payments/${paymentId}`);
   };
 
   const getStatusBadgeClass = (status) => {
@@ -102,15 +107,14 @@ function PaymentsList() {
     }
   };
 
-const formatCurrency = (value) => {
-  if (value === null || value === undefined) return 'Ksh 0.00';
+  const formatCurrency = (value) => {
+    if (value === null || value === undefined) return 'Ksh 0.00';
 
-  return `Ksh ${Number(value).toLocaleString('en-KE', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`;
-};
-
+    return `Ksh ${Number(value).toLocaleString('en-KE', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })}`;
+  };
 
   const filteredPayments = payments.filter(payment => {
     const matchesSearch = 
@@ -317,6 +321,9 @@ const formatCurrency = (value) => {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Processed By
                 </th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  
+                </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -324,7 +331,8 @@ const formatCurrency = (value) => {
                 filteredPayments.map((payment) => (
                   <tr 
                     key={payment.id}
-                    className="hover:bg-gray-50 transition"
+                    onClick={() => handleRowClick(payment.id)}
+                    className="hover:bg-gray-50 transition cursor-pointer"
                   >
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
@@ -340,19 +348,14 @@ const formatCurrency = (value) => {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      {payment.invoice ? (
-                        <Link 
-                          to={`/invoices/${payment.invoice_id}`}
-                          className="text-sm text-blue-600 hover:text-blue-800 flex items-center"
-                        >
-                          <FileText size={14} className="mr-1" />
-                          {payment.invoice.invoice_number || payment.invoice_id.substring(0, 8) + '...'}
-                        </Link>
-                      ) : (
-                        <span className="text-sm text-gray-500">
-                          {payment.invoice_id.substring(0, 8)}...
-                        </span>
-                      )}
+                      <Link 
+                        to={`/invoices/${payment.invoice_id}`}
+                        onClick={(e) => e.stopPropagation()}
+                        className="text-sm text-blue-600 hover:text-blue-800 flex items-center"
+                      >
+                        <FileText size={14} className="mr-1" />
+                        {payment.invoice?.invoice_number || '-'}
+                      </Link>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center space-x-2">
@@ -391,18 +394,21 @@ const formatCurrency = (value) => {
                         <div className="flex items-center">
                           <User size={14} className="text-gray-400 mr-1" />
                           <span className="text-sm text-gray-900">
-                            {payment.processor_user.first_name} {payment.processor_user.last_name}
+                            {payment.processor_user.username || payment.processor_user.email?.split('@')[0] || `${payment.processor_user.first_name} ${payment.processor_user.last_name}`}
                           </span>
                         </div>
                       ) : (
                         <span className="text-sm text-gray-500">-</span>
                       )}
                     </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-center">
+                      <ChevronRight size={18} className="text-gray-400" />
+                    </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan="8" className="px-6 py-12 text-center">
+                  <td colSpan="9" className="px-6 py-12 text-center">
                     <CreditCard className="mx-auto text-gray-400 mb-4" size={48} />
                     <p className="text-gray-500 text-lg">No payments found</p>
                     <p className="text-gray-400 text-sm mt-2">
