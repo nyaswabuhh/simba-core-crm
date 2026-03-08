@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     # Database
     # DATABASE_URL: str ="postgresql://postgres:simbapos%402019@localhost:5432/crm_db"
 
-    DATABASE_URL: str ="postgresql://postgres:simbapos%402019@localhost:5432/crm_db"
+    DATABASE_URL: str ="postgresql://postgres:simbapos2019@db:5432/crm_db"
     
     # Security
     SECRET_KEY: str = secrets.token_urlsafe(32)
@@ -26,6 +26,8 @@ class Settings(BaseSettings):
         "http://localhost:3000",
         "http://127.0.0.1:5173", 
         "http://127.0.0.1:3000",
+        "http://apisimba.com",
+        "http://www.apisimba.com",
         "https://apisimba.com",
         "https://www.apisimba.com",
     
